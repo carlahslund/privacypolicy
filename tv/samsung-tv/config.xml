@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets"
+        xmlns:tizen="http://tizen.org/ns/widgets"
+        id="http://graciebarra.gym/GracieBarraTimer"
+        version="1.2.2"
+        viewmodes="maximized">
+
+    <!-- required_version 6.0 covers Samsung sets from 2021 onwards, including the
+         2026 Tizen 10 line. Raise it only if you start using a newer TV API. -->
+    <tizen:application id="GBRoundTmr.GracieBarraTimer"
+                       package="GBRoundTmr"
+                       required_version="6.0"/>
+
+    <content src="index.html"/>
+    <icon src="icon.png"/>
+    <name>Gracie Barra Timer</name>
+    <description>Round timer for Gracie Barra classes: positional sparring, rounds and rest, buzzer and ten-second warning, driven by the TV remote.</description>
+    <author>Gracie Barra</author>
+
+    <tizen:profile name="tv-samsung"/>
+
+    <!-- internet: needed to follow a timer running elsewhere on the gym Wi-Fi.
+         tv.inputdevice: needed to claim the media and colour keys on the remote. -->
+    <tizen:privilege name="http://tizen.org/privilege/internet"/>
+    <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
+
+    <tizen:setting screen-orientation="landscape"
+                   context-menu="disable"
+                   background-support="disable"
+                   encryption="disable"
+                   install-location="auto"
+                   hwkey-event="enable"/>
+
+    <!-- The app is self-contained; these two only matter in companion mode, where it
+         polls a timer on the local network. -->
+    <access origin="*" subdomains="true"/>
+    <tizen:allow-navigation>*</tizen:allow-navigation>
+
+    <tizen:content-security-policy>
+        default-src 'self' 'unsafe-inline';
+        script-src 'self';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data:;
+        connect-src 'self' http: https:;
+        media-src 'self';
+    </tizen:content-security-policy>
+
+</widget>

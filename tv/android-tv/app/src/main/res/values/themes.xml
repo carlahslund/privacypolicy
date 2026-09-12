@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- No action bar, no status bar: the clock is the whole screen. DeviceDefault
+         keeps it free of AppCompat, which this app has no other use for. -->
+    <style name="Theme.GracieBarraTimer" parent="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/gb_ink</item>
+        <item name="android:colorBackground">@color/gb_ink</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentTransitions">false</item>
+    </style>
+</resources>
