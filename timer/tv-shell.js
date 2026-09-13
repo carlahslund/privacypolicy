@@ -1,12 +1,14 @@
-/* Samsung TV shell.
+/* The shell for a TV that can only give us a browser.
 
-   A Tizen web app cannot open a listening socket, so unlike the Android build this TV
-   cannot serve the phone controller itself. It does the next best two things: it runs
-   the whole session on its own, driven by the remote, and — when the gym already has a
-   timer running on a laptop or an Android TV — it can follow that one instead, leaving
-   the phone controller working as it always did.
+   That is the Samsung app — a Tizen web app cannot open a listening socket, so unlike
+   the Android build it cannot serve the phone controller itself — and it is equally
+   the timer opened in a smart TV's own browser, where there is no app at all. Both do
+   the same two things: run the whole session locally, driven by the remote, and, when
+   the gym already has a timer running on a laptop or an Android TV, follow that one
+   instead so the phone controller keeps working.
 
-   Loaded before boot.js, which then leaves GB_SHELL alone. */
+   Every Tizen call below is guarded, so the same file covers both. Loaded before
+   boot.js, which then leaves GB_SHELL alone. */
 (function (root) {
   'use strict';
 
@@ -47,14 +49,17 @@
     });
   }
 
+  var onTizen = !!root.tizen;
+
   var shell = {
-    kind: 'tizen',
+    kind: onTizen ? 'tizen' : 'browser',
+    tv: true,
     nativeAudio: false,
     sources: true,
     version: VERSION,
-    label: 'Samsung TV',
+    label: onTizen ? 'Samsung TV' : 'TV browser',
     safe: 24,               /* a margin for sets that still overscan */
-    blurb: 'This TV keeps the session. To control it from a phone, point it at a ' +
+    blurb: 'This screen keeps the session. To control it from a phone, point it at a ' +
       'timer running on the gym laptop or an Android TV box under TIMER SOURCE.',
     transport: source ? remote(source) : standalone,
     source: function () { return source; },

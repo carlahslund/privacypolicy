@@ -22,7 +22,7 @@ mkdir -p "$STAGE"
 # The display, the engine, the buzzer voices and the ten-foot menu are shared with the
 # Android app and with the Windows build; only the shell below is Samsung's.
 cp "$SHARED"/*.js "$SHARED"/*.css "$SHARED"/logo.png "$STAGE/"
-cp "$HERE/config.xml" "$HERE/icon.png" "$HERE/tizen-shell.js" "$STAGE/"
+cp "$HERE/config.xml" "$HERE/icon.png" "$STAGE/"
 
 # Tizen needs two extra tags in the page: the TV's own web APIs, and the shell that
 # installs the session engine before boot.js looks for one.
@@ -33,12 +33,12 @@ html = open(source, encoding='utf-8').read()
 anchor = '  <script src="boot.js" defer></script>'
 inject = (
     '  <script src="$WEBAPIS/webapis/webapis.js"></script>\n'
-    '  <script src="tizen-shell.js" defer></script>\n'
+    '  <script src="tv-shell.js" defer></script>\n'
 )
 if anchor not in html:
     raise SystemExit('index.html no longer loads boot.js — update build-wgt.sh')
 open(target, 'w', encoding='utf-8').write(html.replace(anchor, inject + anchor))
-print('  index.html   (+ webapis, + tizen-shell)')
+print('  index.html   (+ webapis, + tv-shell)')
 PY
 
 for file in "$STAGE"/*; do echo "  $(basename "$file")"; done

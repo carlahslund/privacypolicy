@@ -3,6 +3,28 @@
 The whole timer as a Tizen web app: the session runs on the TV and the remote drives
 it. Works with no laptop, no network and no phone.
 
+## Before you start: Samsung makes installing hard
+
+Samsung does not allow sideloading the way Android TV does. Every app has to be signed
+with a certificate tied to *your Samsung account and that particular TV*, and pushed
+from Tizen Studio over the network with the TV in developer mode. There is no USB-stick
+install. Budget 30–45 minutes on a laptop, once.
+
+If that is more than the gym wants to take on, two shortcuts give the same timer on the
+same screen:
+
+1. **The TV's own browser — nothing to install.** Open the Samsung browser and go to
+   the published address (once this branch is on `main`, that is
+   `https://carlahslund.github.io/privacypolicy/timer/`). The whole timer runs there,
+   engine and all, with the remote driving it exactly as the installed app does. You
+   navigate to it each time instead of launching it from *Apps*, and the browser has to
+   be left open — that is the only difference.
+2. **An Android TV stick in the Samsung's HDMI port.** Any cheap stick takes the APK in
+   about ten minutes, and that build also serves the phone controller, which the Tizen
+   app cannot.
+
+The rest of this page is the real install.
+
 ## Building the package
 
 ```bash

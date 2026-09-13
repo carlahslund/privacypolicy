@@ -1,16 +1,22 @@
 # Gracie Barra Round Timer — television versions
 
-Two installable TV builds of the gym timer that previously needed a Windows laptop:
+Two installable TV builds of the gym timer that previously needed a Windows laptop,
+and a browser version for the sets that will not let you install anything:
 
-| | **Android TV** | **Samsung (Tizen)** |
-|---|---|---|
-| Runs the session on the TV | yes | yes |
-| Driven by the TV remote | yes | yes |
-| Buzzer out of the TV speakers | yes, no "enable sound" tap | yes |
-| Serves the phone controller itself | **yes** — phones pair straight to the TV | no (Tizen apps cannot open a listening socket) |
-| Phone control still possible | built in | by following a timer running on a laptop or an Android TV box |
-| Needs the laptop | no | only if you want phone control |
-| Package | `.apk` | `.wgt` |
+| | **Android TV** | **Samsung (Tizen)** | **Any TV browser** |
+|---|---|---|---|
+| Runs the session on the TV | yes | yes | yes |
+| Driven by the TV remote | yes | yes | yes |
+| Buzzer out of the TV speakers | yes, no "enable sound" tap | yes | yes |
+| Serves the phone controller itself | **yes** — phones pair straight to the TV | no (Tizen apps cannot open a listening socket) | no |
+| Phone control still possible | built in | by following a timer on a laptop or an Android TV box | same |
+| Installed as an app | yes | yes | no — it is a web page |
+| Getting it on screen | sideload an APK | Tizen Studio, developer mode, a Samsung certificate | type an address |
+| Package | `.apk` | `.wgt` | [`/timer`](../timer) |
+
+The third column exists because Samsung will not let you sideload: every Tizen app has
+to be signed against your Samsung account *and* that particular TV. When that is more
+setup than a gym wants, the browser build is the same timer with nothing to install.
 
 The Windows build is unchanged and still works. A phone already paired with it keeps
 working, because both TV apps speak the same `/api` routes.
@@ -78,7 +84,13 @@ cd tv/android-tv && ./gradlew assembleRelease
 
 # Samsung TV → build/GracieBarraTimer.wgt
 cd tv/samsung-tv && ./build-wgt.sh
+
+# Browser version → /timer at the repository root, served by GitHub Pages
+tv/tools/build-web.sh
 ```
+
+`/timer` is checked in because Pages serves the branch as it stands; CI fails if it
+drifts from `tv/shared/web`, so rebuild and commit it when the shared layer changes.
 
 Per-platform installation, including Samsung's developer mode and certificate, is in
 [`android-tv/README.md`](android-tv/README.md) and [`samsung-tv/README.md`](samsung-tv/README.md).

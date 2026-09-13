@@ -6,6 +6,7 @@ on:
   push:
     paths:
       - 'tv/**'
+      - 'timer/**'
       - '.github/workflows/tv-apps.yml'
   pull_request:
     paths:
@@ -23,6 +24,8 @@ jobs:
           node-version: '20'
       - name: Session engine tests
         run: node tv/tests/timer-core.test.js
+      - name: The published browser build matches the shared layer
+        run: tv/tools/build-web.sh --check
 
   android:
     name: Android TV (apk)

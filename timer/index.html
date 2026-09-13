@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101115">
+  <title>Gracie Barra · Round Timer</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="tv.css">
+  <script src="qrcode.js" defer></script>
+  <script src="qr-svg.js" defer></script>
+  <script src="timer-core.js" defer></script>
+  <script src="transport.js" defer></script>
+  <script src="tv-shell.js" defer></script>
+  <script src="boot.js" defer></script>
+  <script src="app.js" defer></script>
+  <script src="tv-menu.js" defer></script>
+  <script src="tv-boot.js" defer></script>
+</head>
+<body>
+  <main id="display" class="display" aria-label="Round timer">
+    <header class="display-head">
+      <div class="identity"><img src="logo.png" alt="Gracie Barra logo"><span>GRACIE BARRA <small>ROUND TIMER</small></span></div>
+      <div class="round-pill" id="round-pill">READY TO ROLL</div>
+    </header>
+    <section class="arena">
+      <div class="eyebrow" id="display-mode">POSITIONAL SPARRING</div>
+      <div class="position" id="display-position">HALF GUARD</div>
+      <div class="time" id="display-time" role="timer" aria-live="off">03:00</div>
+      <div class="state-line"><span class="state-dot"></span><span id="display-status">READY</span></div>
+      <div class="roles" id="display-roles">A TOP · B BOTTOM</div>
+    </section>
+    <footer class="display-foot"><span id="display-next">3:00 ROUNDS · 0:30 REST</span><span class="foot-right">CARLOS GRACIE JR. · JIU-JITSU FOR EVERYONE</span></footer>
+    <div class="display-actions" id="display-actions">
+      <button id="sound-button" class="quiet-button" type="button">🔊 ENABLE SOUND</button>
+      <button id="menu-button" class="quiet-button" type="button" aria-expanded="false">☷ CONTROLS</button>
+    </div>
+    <aside id="display-menu" class="display-menu" hidden aria-label="TV remote controls">
+      <div class="menu-heading">QUICK CONTROLS <button id="close-menu" class="quiet-button" type="button">✕ CLOSE</button></div>
+      <div class="menu-grid">
+        <button data-action="toggle">▶ START / PAUSE</button><button data-action="buzzer">◖)) BUZZER</button>
+        <button data-action="previous">↶ PREVIOUS</button><button data-action="next">NEXT ↷</button>
+        <button data-action="minus">− 10 SEC</button><button data-action="plus">+ 10 SEC</button>
+        <button data-action="reset">↺ RESET</button><a href="/control">ALL SETTINGS →</a>
+      </div>
+      <p>Use arrows and OK on a TV browser remote. HDMI TV remotes usually cannot control the laptop.</p>
+    </aside>
+  </main>
+
+  <main id="control" class="control" hidden>
+    <header class="control-head"><div class="control-brand"><img src="logo.png" alt="Gracie Barra logo"><div>GRACIE BARRA <small>GYM TIMER · COACH CONTROL</small></div></div><a class="display-link" href="/display">TV DISPLAY ↗</a></header>
+    <div class="control-layout">
+      <section class="control-main">
+        <div class="control-label">LIVE SESSION</div>
+        <div class="live-panel"><div class="live-top"><span id="live-mode">POSITIONAL SPARRING</span><span id="live-round">ROUND 1 / 6</span></div><div id="live-time" class="live-time">03:00</div><div class="live-bottom"><span id="live-status">READY</span><span id="live-position">HALF GUARD</span></div></div>
+        <div id="error" class="error" role="alert" hidden></div>
+        <div id="pair-card" class="pair-card" hidden><h2>Connect this controller</h2><p>Enter the six-digit access code shown in the laptop’s server window. Keep your phone on the same Wi‑Fi as the laptop.</p><form id="pair-form"><input id="pin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="6-digit code" aria-label="Access code" required><button type="submit">CONNECT</button></form></div>
+        <div id="controls" class="controls"><button class="primary" data-action="toggle" id="toggle-button">▶ START</button><button class="danger" data-action="buzzer">◖)) BUZZER</button><button data-action="previous">↶ PREVIOUS</button><button data-action="next">NEXT ↷</button><button data-action="minus">− 10 SEC</button><button data-action="plus">+ 10 SEC</button><button data-action="reset">↺ RESET ROUND</button></div>
+        <p class="control-note">Changes to settings reset the current session. Buzzer sounds on the TV display; click Enable Sound there once after opening it.</p>
+      </section>
+      <section class="settings" id="settings">
+        <div class="control-label">SESSION SETUP</div>
+        <h1>Build your round.</h1>
+        <div class="qr-card" id="qr-card" hidden>
+          <img id="pair-qr" alt="Scan to open and connect the phone controller" width="150" height="150">
+          <div class="qr-copy"><strong>SCAN TO CONNECT</strong><p id="qr-instructions">Point your phone camera here to open the controller and pair automatically. Use the same Wi-Fi as the laptop.</p><label id="qr-network-wrap" hidden>NETWORK ADDRESS <select id="qr-network" aria-label="Choose laptop network address"></select></label><a id="qr-address" href="#" title="Test this address on the laptop"></a><form id="manual-ip-form" class="manual-ip-form"><label>LAPTOP WI-FI IPv4 ADDRESS<input id="manual-ip" type="text" inputmode="decimal" placeholder="e.g. 192.168.1.42" aria-label="Laptop Wi-Fi IPv4 address" required></label><button type="submit">USE IP</button></form><small>Wrong address in the QR? Enter the Wi-Fi IPv4 address shown by <code>ipconfig</code> on Windows or Network Settings on Mac.</small></div>
+        </div>
+        <div class="preset-grid" id="presets">
+          <button type="button" data-preset="positional">POSITIONAL <span>3:00 / 0:30</span></button>
+          <button type="button" data-preset="regular">REGULAR <span>5:00 / 1:00</span></button>
+          <button type="button" data-preset="competition">COMPETITION <span>6:00 / 1:00</span></button>
+          <button type="button" data-preset="eight">8-MINUTE <span>8:00 / 1:00</span></button>
+          <button type="button" data-preset="ten">10-MINUTE <span>10:00 / 1:00</span></button>
+          <button type="button" data-preset="shark">SHARK TANK <span>2:00 / 0:15</span></button>
+          <button type="button" data-preset="open">OPEN MAT <span>STOPWATCH</span></button>
+          <button type="button" data-preset="custom">CUSTOM <span>YOUR FORMAT</span></button>
+        </div>
+        <form id="settings-form">
+          <div class="field-row"><label>ROUND TIME <input id="round-input" type="text" inputmode="numeric" placeholder="3:00" aria-label="Round time in minutes and seconds" required></label><label>REST TIME <input id="rest-input" type="text" inputmode="numeric" placeholder="0:30" aria-label="Rest time in minutes and seconds" required></label><label>ROUNDS <input id="rounds-input" type="number" min="1" max="99" required></label></div>
+          <label class="position-field">POSITION / THEME <select id="position-select"><option value="">Free roll</option><option>Closed Guard</option><option>Open Guard</option><option>Half Guard</option><option>Side Control</option><option>Mount</option><option>Back Control</option><option>Takedowns</option><option>Passing</option><option>Escapes</option><option value="custom">Custom position…</option></select></label>
+          <label class="position-field" id="custom-position-wrap" hidden>CUSTOM POSITION <input id="custom-position" type="text" maxlength="40" placeholder="e.g. Turtle escapes"></label>
+          <label class="check-row"><input id="alternate-input" type="checkbox"><span><strong>Alternate A / B roles</strong><small>Switch who starts on top each round</small></span></label>
+          <label class="check-row"><input id="warning-input" type="checkbox"><span><strong>Final 10-second warning</strong><small>Red screen and short beep</small></span></label>
+          <label class="sound-field">ROUND-ENDING BUZZER</label>
+          <div class="sound-controls"><select id="buzzer-select" aria-label="Choose buzzer sound"><option value="classic">Classic gym horn</option><option value="airhorn">Air horn</option><option value="bell">Ringside bell</option><option value="digital">Digital chime</option></select><button id="preview-button" type="button">▶ PREVIEW</button></div>
+          <label class="volume-field">BUZZER VOLUME <span id="volume-number">80%</span><input id="volume-input" type="range" min="10" max="100" step="10" value="80"></label>
+          <span class="sound-help">Preview plays on this device. Session buzzers play on the TV display after you click Enable Sound there.</span>
+          <button type="submit" class="save-button">APPLY SETTINGS &amp; START →</button>
+        </form>
+      </section>
+    </div>
+    <footer class="control-footer"><span id="connection">CONNECTING…</span><span id="phone-url"></span></footer>
+  </main>
+</body>
+</html>
