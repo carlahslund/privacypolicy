@@ -50,6 +50,13 @@ android {
         buildConfig = true
     }
 
+    androidResources {
+        /* The recorded buzzers are opened with openFd, which only works on an asset
+           that was stored rather than deflated. aapt already leaves mp3 alone; this
+           says so out loud in case that default ever changes. */
+        noCompress += "mp3"
+    }
+
     packaging {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
     }

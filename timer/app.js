@@ -105,6 +105,7 @@
   }
   function unlockSound() {
     startAudio().then(ok => {
+      if (ok && state && recordings[state.config.buzzer]) loadRecording(state.config.buzzer);
       const button = $('sound-button');
       if (!button) return;
       if (ok) { button.textContent='🔊 SOUND ON'; button.style.opacity='.5'; }
@@ -129,12 +130,54 @@
     gain.gain.exponentialRampToValueAtTime(.001,start+length);
     osc.connect(gain);gain.connect(audio.destination);osc.start(start);osc.stop(start+length+.03);
   }
+  /* The recorded bells, against the file each one plays. Synthesised voices need
+     nothing loaded; these are fetched and decoded once, well before the round ends,
+     because a buzzer that arrives a beat late is worse than no buzzer. */
+  const recordings = {opening:'opening-bell', boxing:'boxing-bell', boxing3:'boxing-bell-3'};
+  const decoded = {};
+  const loading = {};
+
+  function loadRecording(style) {
+    const file = recordings[style];
+    if (!file || !audio) return Promise.resolve(null);
+    if (decoded[style]) return Promise.resolve(decoded[style]);
+    if (loading[style]) return loading[style];
+    const base = transport.current.base || '';
+    const url = base ? `${base}/buzzers/${file}.mp3` : `buzzers/${file}.mp3`;
+    loading[style] = fetch(url, {cache:'force-cache'})
+      .then(response => { if (!response.ok) throw new Error('missing buzzer'); return response.arrayBuffer(); })
+      .then(bytes => new Promise((resolve, reject) => {
+        /* decodeAudioData is callback-only on older TV browsers. */
+        const done = buffer => { decoded[style] = buffer; resolve(buffer); };
+        const result = audio.decodeAudioData(bytes, done, reject);
+        if (result && result.then) result.then(done, reject);
+      }))
+      .catch(() => { loading[style] = null; return null; });
+    return loading[style];
+  }
+
+  function playRecording(style, volume) {
+    const buffer = decoded[style];
+    if (!buffer) { loadRecording(style); return false; }
+    const source = audio.createBufferSource();
+    const gain = audio.createGain();
+    source.buffer = buffer;
+    gain.gain.value = Math.max(0, Math.min(1, volume));
+    source.connect(gain);
+    gain.connect(audio.destination);
+    source.start();
+    return true;
+  }
+
   function sound(kind, style=state?.config.buzzer || 'classic', volume=state?.config.buzzer_volume || .8) {
     if (shell.nativeAudio) return;
     if (!audio || audio.state !== 'running') return;
     const t=audio.currentTime+.01;
     if (kind==='warning') tone(900,t,.19,.16,'sine');
     else if (kind==='end_round' || kind==='manual') {
+      /* A recording that has not finished loading falls back to the gym horn
+         rather than letting the round end in silence. */
+      if (recordings[style] && playRecording(style, volume)) return;
       if (style==='airhorn') {
         for (const start of [t,t+.95]) { tone(140,start,.82,.25*volume);tone(146,start,.82,.17*volume);tone(195,start,.82,.12*volume); }
       } else if (style==='bell') {
@@ -212,6 +255,7 @@
       if (next.events.length) lastEvent=Math.max(lastEvent,next.events[next.events.length-1].id);
       if (!state && !isDisplay) fillSettings(next.config);
       state=next;
+      if (recordings[next.config.buzzer]) loadRecording(next.config.buzzer);
       document.body.classList.remove('offline');
       if (!isDisplay) {
         $('pair-card').hidden=next.paired;
@@ -282,7 +326,9 @@
     $('volume-input').addEventListener('input',()=>{ $('volume-number').textContent=`${$('volume-input').value}%`; });
     $('preview-button').addEventListener('click',async()=>{
       if (!await startAudio()) { showError('This browser cannot play the buzzer preview.'); return; }
-      sound('manual',$('buzzer-select').value,Number($('volume-input').value)/100);
+      const style=$('buzzer-select').value;
+      if (recordings[style]) await loadRecording(style);
+      sound('manual',style,Number($('volume-input').value)/100);
     });
     $('pair-form').addEventListener('submit',async event=>{
       event.preventDefault();
@@ -312,6 +358,7 @@
        and the buzzer watermark so the next poll starts the session clean. */
     resync: () => { state = null; lastEvent = null; return poll(); },
     applyConfig: async (config) => { await transport.config(config); await poll(); },
+    loadBuzzer: loadRecording,
     pair: async (pin) => { await transport.pair(pin); await poll(); },
     onState: (listener) => { listeners.push(listener); }
   };

@@ -28,7 +28,7 @@ const TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
-  '.png': 'image/png'
+  '.png': 'image/png', '.mp3': 'audio/mpeg'
 };
 
 function localUrls() {

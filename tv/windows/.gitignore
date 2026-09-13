@@ -1,0 +1,7 @@
+# Staged from ../shared/web by build.sh; the .gitkeep keeps the embed compiling
+# before anything has been staged.
+/web/*
+!/web/.gitkeep
+/build/
+# `go build ./...` drops a binary named after the module here.
+/timer

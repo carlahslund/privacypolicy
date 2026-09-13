@@ -25,6 +25,7 @@ fi
 mkdir -p "$TARGET"
 
 cp "$SHARED"/*.js "$SHARED"/*.css "$SHARED"/logo.png "$TARGET/"
+cp -r "$SHARED/buzzers" "$TARGET/"
 
 python3 - "$SHARED/index.html" "$TARGET/index.html" <<'PY'
 import sys

@@ -11,8 +11,11 @@
   var PRESET_ORDER = ['positional', 'regular', 'competition', 'eight', 'ten', 'shark', 'open', 'custom'];
   var PRESET_LABELS = { positional: 'POSITIONAL 3:00/0:30', regular: 'REGULAR 5:00/1:00', competition: 'COMPETITION 6:00/1:00', eight: '8-MINUTE', ten: '10-MINUTE', shark: 'SHARK TANK 2:00/0:15', open: 'OPEN MAT (STOPWATCH)', custom: 'CUSTOM' };
   var POSITIONS = ['', 'Closed Guard', 'Open Guard', 'Half Guard', 'Side Control', 'Mount', 'Back Control', 'Takedowns', 'Passing', 'Escapes'];
-  var BUZZERS = ['classic', 'airhorn', 'bell', 'digital'];
-  var BUZZER_LABELS = { classic: 'CLASSIC GYM HORN', airhorn: 'AIR HORN', bell: 'RINGSIDE BELL', digital: 'DIGITAL CHIME' };
+  var BUZZERS = ['classic', 'airhorn', 'bell', 'digital', 'opening', 'boxing', 'boxing3'];
+  var BUZZER_LABELS = {
+    classic: 'CLASSIC GYM HORN', airhorn: 'AIR HORN', bell: 'RINGSIDE BELL', digital: 'DIGITAL CHIME',
+    opening: 'OPENING BELL (RECORDED)', boxing: 'BOXING BELL (RECORDED)', boxing3: 'BOXING BELL ×3 (RECORDED)'
+  };
 
   var QUICK = [
     { action: 'toggle', label: '▶ START / PAUSE' },
@@ -235,8 +238,14 @@
     var self = this;
     this.app.startAudio().then(function (ok) {
       if (!ok && !self.app.shell.nativeAudio) { self.notify('This TV will not play a preview here.'); return; }
-      if (self.app.shell.previewBuzzer) self.app.shell.previewBuzzer(self.draft.buzzer, self.draft.buzzer_volume);
-      else self.app.sound('manual', self.draft.buzzer, self.draft.buzzer_volume);
+      if (self.app.shell.previewBuzzer) {
+        self.app.shell.previewBuzzer(self.draft.buzzer, self.draft.buzzer_volume);
+        return;
+      }
+      /* A recorded bell has to be decoded before it can be previewed. */
+      Promise.resolve(self.app.loadBuzzer(self.draft.buzzer)).then(function () {
+        self.app.sound('manual', self.draft.buzzer, self.draft.buzzer_volume);
+      });
     });
   };
 

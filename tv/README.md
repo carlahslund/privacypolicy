@@ -30,12 +30,14 @@ working, because both TV apps speak the same `/api` routes.
 ```
 tv/
 ├── shared/web/          the display, the phone controller, the session engine,
-│                        the buzzer voices and the ten-foot menu — one copy, used
-│                        by both apps and identical to what Windows served
+│                        the buzzers and the ten-foot menu — one copy, used by
+│                        every build and identical to what Windows served
+│   └── buzzers/         the recorded bells
 ├── android-tv/          Kotlin shell: timer engine, HTTP server, native buzzer
 ├── samsung-tv/          Tizen shell: in-page engine, remote keys, packaging
-├── tools/               dev server and the artwork generator
-└── tests/               session engine tests
+├── windows/             the gym-laptop build, cross-compiled to a Windows exe
+├── tools/               dev server, artwork and buzzer cutting
+└── tests/               session engine and browser tests
 ```
 
 The display on the wall is the same page the Windows build served, so the gym sees
@@ -55,6 +57,48 @@ exactly what it is used to. What differs is underneath:
 The two engines are held to the same behaviour by the same scenarios, run twice:
 [`tv/tests/timer-core.test.js`](tests/timer-core.test.js) and
 [`TimerEngineTest.kt`](android-tv/app/src/test/kotlin/com/graciebarra/roundtimer/tv/TimerEngineTest.kt).
+
+## Buzzers
+
+Seven to choose from, everywhere: four synthesised in the page exactly as the
+Windows build always did — classic gym horn, air horn, ringside bell, digital
+chime — and three recordings the gym supplied:
+
+| | |
+|---|---|
+| **Opening bell** | one struck bell, 1.1s |
+| **Boxing bell** | a single ring, 0.8s |
+| **Boxing bell ×3** | three rings, 1.2s — the usual end-of-round signal |
+
+The recordings live in [`shared/web/buzzers`](shared/web/buzzers) and are exact
+frame-level excerpts of the source files, cut by
+[`tools/make-buzzers.py`](tools/make-buzzers.py) — no re-encoding, and the 33-second
+source reduced to the ring that is actually wanted. The browser builds decode them
+once and keep them warm so the bell lands on the second; Android plays them through
+MediaPlayer instead, and falls back to the synthesised horn if one ever fails to
+open. The ten-second warning and the end-of-rest chime stay synthesised whatever
+buzzer is chosen, as before.
+
+Re-cut them after changing a source recording:
+
+```bash
+python3 tv/tools/make-buzzers.py <folder holding the source mp3s>
+```
+
+## The gym laptop
+
+[`windows/`](windows) is the laptop build, rebuilt. It serves the same pages, the
+same `/api` routes and the same six-digit pairing as 1.2.2, keeps `settings.json`
+next to the executable, and is a single file with nothing to install — now
+including the recorded buzzers. Build it with `cd tv/windows && ./build.sh`, which
+cross-compiles a Windows x64 executable from any machine; CI attaches one to every
+run.
+
+The 1.2.2 executable was shipped without its sources, so this is a rebuild against
+the extracted assets and the behaviour the original's own pages depend on, not a
+recompile of that C. The engine is held to the same test scenarios as the other two
+([`windows/engine_test.go`](windows/engine_test.go)), which is what keeps the three
+honest.
 
 ## Using the remote
 
@@ -79,6 +123,9 @@ Both packages are built by CI on every push to `tv/`
 the run, which is the easiest way to get them. To build locally:
 
 ```bash
+# Windows laptop → build/GracieBarraTimer-v1.3.0.exe
+cd tv/windows && ./build.sh
+
 # Android TV → app/build/outputs/apk/release/app-release.apk
 cd tv/android-tv && ./gradlew assembleRelease
 
@@ -101,6 +148,7 @@ Per-platform installation, including Samsung's developer mode and certificate, i
 node tv/tools/dev-server.js        # serves the shared web layer with the real API
 node tv/tests/timer-core.test.js   # session engine
 node tv/tests/browser.test.js      # pointer and D-pad interaction, in a real Chromium
+(cd tv/windows && go test ./...)   # the same session scenarios again, in Go
 ```
 
 The browser test needs Playwright once: `npm install --no-save playwright && npx
