@@ -100,7 +100,13 @@ Per-platform installation, including Samsung's developer mode and certificate, i
 ```bash
 node tv/tools/dev-server.js        # serves the shared web layer with the real API
 node tv/tests/timer-core.test.js   # session engine
+node tv/tests/browser.test.js      # pointer and D-pad interaction, in a real Chromium
 ```
+
+The browser test needs Playwright once: `npm install --no-save playwright && npx
+playwright install chromium`. It exists because a TV browser drives the page with a
+pointer rather than a D-pad, and because a browser will not sound the buzzer until
+something has been pressed — neither is visible from the engine tests.
 
 - `http://localhost:8765/display?shell=android` — the Android TV screen, remote keys
   mapped to the keyboard arrows, Enter and Escape

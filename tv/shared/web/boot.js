@@ -26,6 +26,7 @@
   var shell = root.GB_SHELL;
   if (shell.tv) {
     document.body.classList.add('tv-shell');
+    if (shell.pointer) document.body.classList.add('tv-pointer');
     /* A few sets still overscan. Give the layout a margin it can lose safely. */
     var safe = params.get('safe');
     document.documentElement.style.setProperty('--tv-safe', (safe == null ? shell.safe == null ? 0 : shell.safe : Number(safe)) + 'px');

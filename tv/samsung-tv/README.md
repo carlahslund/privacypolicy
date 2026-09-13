@@ -14,11 +14,14 @@ If that is more than the gym wants to take on, two shortcuts give the same timer
 same screen:
 
 1. **The TV's own browser — nothing to install.** Open the Samsung browser and go to
-   the published address (once this branch is on `main`, that is
-   `https://carlahslund.github.io/privacypolicy/timer/`). The whole timer runs there,
-   engine and all, with the remote driving it exactly as the installed app does. You
-   navigate to it each time instead of launching it from *Apps*, and the browser has to
-   be left open — that is the only difference.
+   `https://carlahslund.github.io/privacypolicy/timer/`. The whole timer runs there,
+   engine and all. Samsung's browser usually drives the page with an on-screen pointer
+   rather than sending the page key presses, so everything can be aimed at and clicked:
+   **CONTROLS** at the bottom right opens the menu, and **ENABLE SOUND** next to it
+   turns the buzzer on — a browser will not make a sound until something is pressed.
+   The arrows and OK work too on sets that send them. You navigate to the address each
+   time instead of launching it from *Apps*, and the browser has to be left open — that
+   is the only difference.
 2. **An Android TV stick in the Samsung's HDMI port.** Any cheap stick takes the APK in
    about ten minutes, and that build also serves the phone controller, which the Tizen
    app cannot.

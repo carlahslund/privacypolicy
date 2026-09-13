@@ -98,7 +98,10 @@
     if (shell.nativeAudio) return Promise.resolve(false);
     try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); }
     catch (_) { return Promise.resolve(false); }
-    return audio.resume().then(() => true).catch(() => false);
+    /* resume() keeps its promise even when the browser leaves the context
+       suspended for want of a gesture, so the state is the only honest answer —
+       believing the promise hides the one button that can turn the buzzer on. */
+    return audio.resume().then(() => audio.state === 'running').catch(() => false);
   }
   function unlockSound() {
     startAudio().then(ok => {
@@ -233,8 +236,16 @@
     const openMenu=()=>{ menu.hidden=false; $('menu-button').setAttribute('aria-expanded','true'); menu.querySelector('button[data-action]').focus(); };
     const closeMenu=()=>{ menu.hidden=true; $('menu-button').setAttribute('aria-expanded','false'); $('menu-button').focus(); };
     if (isTv) {
-      /* The TV shells replace the small hover menu with a ten-foot one. */
-      $('display-actions').hidden = true;
+      /* Android sees the remote before the page does, so the hover bar would be
+         clutter there. A TV browser may hand the page only a pointer, so it needs
+         something to aim at — the bar opens the same ten-foot menu the D-pad does. */
+      const bar = $('display-actions');
+      bar.hidden = !shell.pointer;
+      if (shell.pointer) {
+        $('menu-button').addEventListener('click', () => window.GBTvMenu.toggle());
+        $('sound-button').hidden = !!shell.nativeAudio;
+        $('sound-button').addEventListener('click', unlockSound);
+      }
     } else {
       $('sound-button').addEventListener('click',unlockSound);
       $('menu-button').addEventListener('click',()=>menu.hidden?openMenu():closeMenu());
@@ -305,7 +316,11 @@
     onState: (listener) => { listeners.push(listener); }
   };
 
-  if (isTv) startAudio();
+  if (isTv) startAudio().then(started => {
+    /* An app context starts the buzzer on its own; a browser waits for a gesture,
+       so there the button has to stay put until someone presses it. */
+    if (started && $('sound-button')) $('sound-button').hidden = true;
+  });
   const scanCode = !isDisplay ? new URLSearchParams(location.search).get('pair') : null;
   if (scanCode) {
     history.replaceState(null,'',location.pathname);

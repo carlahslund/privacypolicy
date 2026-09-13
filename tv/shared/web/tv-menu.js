@@ -36,6 +36,16 @@
     return Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0');
   }
   function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+  /* Element.closest is missing on a few older TV browsers, and this file has to
+     run on whatever the set happens to ship. */
+  function ancestor(node, attribute) {
+    while (node && node !== document) {
+      if (node.getAttribute && node.getAttribute(attribute) !== null) return node;
+      node = node.parentNode;
+    }
+    return null;
+  }
   function cycle(list, value, step) {
     var i = list.indexOf(value);
     if (i < 0) i = 0;
@@ -85,6 +95,56 @@
     this.footEl = document.getElementById('tv-foot');
     this.toastEl = toast;
     this.hintEl = hint;
+
+    if (this.app.shell.pointer) {
+      hint.textContent = 'Aim at CONTROLS, or press OK on the remote';
+    }
+
+    /* Everything the D-pad can do, a pointer can do too: a TV browser may never
+       send this page a key event, and then clicking is all there is. Delegated,
+       because the panel is rebuilt from scratch on every render. */
+    var self = this;
+
+    this.tabsEl.addEventListener('click', function (event) {
+      var tab = ancestor(event.target, 'data-tab');
+      if (!tab) return;
+      self.tab = Number(tab.getAttribute('data-tab'));
+      self.onTabs = false;
+      self.index = 0;
+      self._render();
+    });
+
+    this.paneEl.addEventListener('click', function (event) {
+      var row = ancestor(event.target, 'data-index');
+      if (!row) return;
+      self.onTabs = false;
+      self.index = Number(row.getAttribute('data-index'));
+
+      var digit = ancestor(event.target, 'data-digit');
+      if (digit) {
+        var descriptor = self._rows()[self.index];
+        var entry = self._entryFor(descriptor.entry);
+        var at = Number(digit.getAttribute('data-digit'));
+        /* First aim picks the digit, a second one counts it up. */
+        if (entry.at === at) entry.digits[at] = (entry.digits[at] + 1) % 10;
+        else entry.at = at;
+        self._render();
+        return;
+      }
+
+      var step = ancestor(event.target, 'data-step');
+      if (step) {
+        self._adjust(Number(step.getAttribute('data-step')));
+        return;
+      }
+
+      self._activate();
+    });
+
+    /* Aiming past the panel closes it, the way tapping outside a dialog does. */
+    root_.addEventListener('click', function (event) {
+      if (event.target === root_) self.close();
+    });
   };
 
   TvMenu.prototype._onState = function (state) {
@@ -307,7 +367,8 @@
     var self = this;
 
     this.tabsEl.innerHTML = tabs.map(function (tab, i) {
-      return '<span class="tv-tab' + (i === self.tab ? ' current' : '') + (self.onTabs && i === self.tab ? ' focused' : '') + '">' + tab.label + '</span>';
+      return '<span class="tv-tab' + (i === self.tab ? ' current' : '') + (self.onTabs && i === self.tab ? ' focused' : '') +
+        '" data-tab="' + i + '">' + tab.label + '</span>';
     }).join('');
 
     var rows = this._rows();
@@ -318,14 +379,18 @@
       var focused = !self.onTabs && i === self.index;
       if (row.about) return self._aboutHtml();
       if (row.qr) return self._qrHtml();
-      if (row.entry) return self._entryHtml(self._entryFor(row.entry), focused);
+      if (row.entry) return self._entryHtml(self._entryFor(row.entry), focused, i);
       if (row.button) {
-        return '<div class="tv-row tv-row-button' + (focused ? ' focused' : '') + '">' + row.label + '</div>';
+        return '<div class="tv-row tv-row-button' + (focused ? ' focused' : '') + '" data-index="' + i + '">' + row.label + '</div>';
       }
-      var arrows = focused && !row.disabled && !row.readonly;
-      return '<div class="tv-row' + (focused ? ' focused' : '') + (row.disabled || row.readonly ? ' disabled' : '') + '">' +
+      /* The steppers stay drawn whether or not the row has focus: on a pointer TV
+         they are the only way to change the value, so they cannot hide. */
+      var arrows = !row.disabled && !row.readonly && !!row.adjust;
+      return '<div class="tv-row' + (focused ? ' focused' : '') + (row.disabled || row.readonly ? ' disabled' : '') +
+        '" data-index="' + i + '">' +
         '<span class="tv-row-label">' + row.label + '</span>' +
-        '<span class="tv-row-value">' + (arrows ? '<i>◀</i>' : '') + row.value + (arrows ? '<i>▶</i>' : '') + '</span>' +
+        '<span class="tv-row-value">' + (arrows ? '<i data-step="-1">◀</i>' : '') + row.value +
+        (arrows ? '<i data-step="1">▶</i>' : '') + '</span>' +
         '</div>';
     }).join('');
     this.paneEl.innerHTML = html;
@@ -354,12 +419,13 @@
       '<small>Other addresses: ' + ((state.local_urls || []).slice(1).join('  ·  ') || 'none') + '</small></div></div>';
   };
 
-  TvMenu.prototype._entryHtml = function (entry, focused) {
+  TvMenu.prototype._entryHtml = function (entry, focused, index) {
     var digits = entry.digits.map(function (digit, i) {
       var gap = entry.kind === 'address' && i > 0 && i % 3 === 0 ? ' gap' : '';
-      return '<span class="tv-digit' + gap + (focused && i === entry.at ? ' focused' : '') + '">' + digit + '</span>';
+      return '<span class="tv-digit' + gap + (focused && i === entry.at ? ' focused' : '') +
+        '" data-digit="' + i + '">' + digit + '</span>';
     }).join('');
-    return '<div class="tv-row tv-row-pin' + (focused ? ' focused' : '') + '">' +
+    return '<div class="tv-row tv-row-pin' + (focused ? ' focused' : '') + '" data-index="' + index + '">' +
       '<span class="tv-row-label">' + ENTRIES[entry.kind].label + '</span>' +
       '<span class="tv-pin">' + digits + '</span></div>';
   };
@@ -514,10 +580,12 @@
       root.GBTvMenu.isOpen = menu.isOpen.bind(menu);
       root.GBTvMenu.close = menu.close.bind(menu);
       root.GBTvMenu.show = menu.show.bind(menu);
+      root.GBTvMenu.toggle = menu.toggle.bind(menu);
       return menu;
     },
     notify: function () {},
     handleKey: function () { return false; },
-    isOpen: function () { return false; }
+    isOpen: function () { return false; },
+    toggle: function () {}
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

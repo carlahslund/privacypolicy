@@ -26,6 +26,11 @@ jobs:
         run: node tv/tests/timer-core.test.js
       - name: The published browser build matches the shared layer
         run: tv/tools/build-web.sh --check
+      - name: Browser interaction tests
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+          node tv/tests/browser.test.js
 
   android:
     name: Android TV (apk)
