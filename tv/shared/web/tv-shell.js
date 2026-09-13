@@ -54,6 +54,11 @@
   var shell = {
     kind: onTizen ? 'tizen' : 'browser',
     tv: true,
+    /* A smart TV's own browser often gives the page nothing but an on-screen
+       pointer — the remote moves a cursor and the arrow keys never reach us — and
+       a Magic Remote does the same inside the app. Neither can be relied on to
+       send key events, so both get controls they can actually aim at. */
+    pointer: true,
     nativeAudio: false,
     sources: true,
     version: VERSION,

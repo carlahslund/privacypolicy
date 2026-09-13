@@ -5,7 +5,29 @@
 
 body.tv-shell { overflow: hidden; }
 body.tv-shell .display { padding: var(--tv-safe, 0px); }
+
+/* On a set with a real D-pad the remote is the whole interface and the hover bar
+   is clutter. In a smart TV's own browser the remote usually drives a pointer
+   instead and no key ever reaches the page, so there the bar is the way in — full
+   opacity, thumb-sized, and parked clear of the overscan. */
 body.tv-shell .display-actions { display: none; }
+body.tv-shell.tv-pointer .display-actions {
+  display: flex;
+  opacity: 1;
+  gap: .7em;
+  right: calc(3vw + var(--tv-safe, 0px));
+  bottom: calc(7vh + var(--tv-safe, 0px));
+}
+body.tv-shell.tv-pointer .quiet-button {
+  padding: .8em 1.3em;
+  font-size: clamp(15px, 1.3vw, 24px);
+  font-weight: 900;
+  letter-spacing: .1em;
+  border-color: #c2454d;
+  background: #241a1ef2;
+}
+body.tv-shell.tv-pointer .quiet-button:hover { background: #b6212a; border-color: #ff6069; }
+body.tv-menu-open .display-actions { display: none !important; }
 
 /* A quiet reminder of the two keys that matter, parked until the class starts. */
 .tv-idle-hint {
@@ -117,7 +139,24 @@ body.tv-shell.offline .display::after {
 }
 .tv-row-label { color: #b9adae; }
 .tv-row-value { display: flex; align-items: center; gap: .55em; color: #fff; font-weight: 900; text-align: right; }
-.tv-row-value i { color: #ff6069; font-style: normal; }
+
+/* The steppers are click targets, not decoration — give them room for a pointer
+   that a remote is nudging across the screen. */
+.tv-row-value i {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.9em;
+  min-height: 1.9em;
+  border-radius: 5px;
+  color: #ff6069;
+  font-style: normal;
+  cursor: pointer;
+}
+.tv-row-value i:hover { background: #ffffff24; color: #fff; }
+.tv-row.focused .tv-row-value i { color: #ffd9db; }
+.tv-tab, .tv-row, .tv-digit { cursor: pointer; }
+.tv-row.disabled, .tv-row.disabled .tv-row-value i { cursor: default; }
+.tv-tab:hover, .tv-row:hover { border-color: #ff6069; }
 .tv-row.disabled { opacity: .4; }
 .tv-row-button { justify-content: center; background: #2a2025; letter-spacing: .13em; }
 
