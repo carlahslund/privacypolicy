@@ -1,0 +1,10 @@
+# Build output for both TV apps
+android-tv/.gradle/
+android-tv/build/
+android-tv/app/build/
+android-tv/local.properties
+android-tv/.idea/
+samsung-tv/build/
+samsung-tv/.buildResult/
+*.wgt
+*.apk

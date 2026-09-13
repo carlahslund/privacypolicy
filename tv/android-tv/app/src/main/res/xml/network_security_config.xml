@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The display loads from this device's own loopback address and the phone
+     controller is served over the gym's LAN, so plain HTTP is the whole point here.
+     Nothing in the app talks to the internet. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

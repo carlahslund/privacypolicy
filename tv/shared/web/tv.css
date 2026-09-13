@@ -1,0 +1,208 @@
+/* Ten-foot layer: only loaded by the TV shells, on top of the gym's own style.css.
+   Everything here is sized for a couch, not a desk — nothing under about 22px at
+   1080p, focus you can find from across the mat, and a margin that survives the
+   overscan some sets still apply. */
+
+body.tv-shell { overflow: hidden; }
+body.tv-shell .display { padding: var(--tv-safe, 0px); }
+body.tv-shell .display-actions { display: none; }
+
+/* A quiet reminder of the two keys that matter, parked until the class starts. */
+.tv-idle-hint {
+  position: fixed;
+  z-index: 6;
+  left: 50%;
+  bottom: calc(2.5vh + var(--tv-safe, 0px));
+  transform: translateX(-50%);
+  padding: .55em 1.2em;
+  border: 1px solid #6d4a4d;
+  border-radius: 999px;
+  background: #14151ad9;
+  color: #cbbdbd;
+  font-size: clamp(13px, 1.15vw, 20px);
+  font-weight: 800;
+  letter-spacing: .16em;
+  white-space: pre-wrap;
+  text-align: center;
+  pointer-events: none;
+}
+body.tv-menu-open .tv-idle-hint { display: none; }
+
+/* Reconnecting badge — companion mode only, where the session lives elsewhere. */
+body.tv-shell.offline .display::after {
+  content: "RECONNECTING TO THE TIMER…";
+  position: absolute;
+  z-index: 6;
+  top: calc(3vh + var(--tv-safe, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  padding: .5em 1.1em;
+  border: 1px solid #b8383f;
+  border-radius: 4px;
+  background: #2a1114ee;
+  color: #ffb4b8;
+  font-size: clamp(13px, 1.2vw, 21px);
+  font-weight: 900;
+  letter-spacing: .17em;
+}
+
+.tv-overlay {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #08090bd4;
+  padding: calc(3vh + var(--tv-safe, 0px)) calc(3vw + var(--tv-safe, 0px));
+}
+
+.tv-sheet {
+  width: min(1320px, 100%);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #15161bfa;
+  border: 2px solid #a3414880;
+  border-top: 7px solid #dd1e25;
+  border-radius: 12px;
+  box-shadow: 0 30px 110px #000c;
+  overflow: hidden;
+}
+
+.tv-tabs {
+  display: flex;
+  gap: clamp(6px, .8vw, 14px);
+  padding: clamp(14px, 1.6vw, 26px) clamp(18px, 2vw, 34px) 0;
+  flex-wrap: wrap;
+}
+.tv-tab {
+  padding: .6em 1.1em;
+  border: 1px solid #4a3c40;
+  border-radius: 5px;
+  color: #b5a7a8;
+  font-size: clamp(14px, 1.15vw, 21px);
+  font-weight: 900;
+  letter-spacing: .14em;
+  white-space: nowrap;
+}
+.tv-tab.current { color: #fff; border-color: #b03038; background: #3a181d; }
+.tv-tab.focused { background: #d0222b; border-color: #ff5f68; color: #fff; box-shadow: 0 0 0 3px #ff5f6855; }
+
+.tv-pane {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: clamp(14px, 1.6vw, 26px) clamp(18px, 2vw, 34px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, .7vw, 11px);
+  scrollbar-width: none;
+}
+.tv-pane::-webkit-scrollbar { display: none; }
+
+.tv-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5em;
+  min-height: clamp(52px, 5.2vh, 78px);
+  padding: .5em clamp(12px, 1.3vw, 22px);
+  border: 1px solid #3c3d45;
+  border-radius: 7px;
+  background: #1d1f25;
+  color: #efe9e9;
+  font-size: clamp(16px, 1.45vw, 27px);
+  font-weight: 800;
+  letter-spacing: .07em;
+}
+.tv-row-label { color: #b9adae; }
+.tv-row-value { display: flex; align-items: center; gap: .55em; color: #fff; font-weight: 900; text-align: right; }
+.tv-row-value i { color: #ff6069; font-style: normal; }
+.tv-row.disabled { opacity: .4; }
+.tv-row-button { justify-content: center; background: #2a2025; letter-spacing: .13em; }
+
+.tv-row.focused {
+  background: #b6212a;
+  border-color: #ff6069;
+  color: #fff;
+  box-shadow: 0 0 0 4px #ff606944;
+  transform: scale(1.012);
+}
+.tv-row.focused .tv-row-label { color: #ffe9ea; }
+
+/* Phone pairing, shown on the TV that is also the server. */
+.tv-phone { display: flex; gap: clamp(16px, 2vw, 34px); align-items: center; flex-wrap: wrap; }
+.tv-qr {
+  width: clamp(180px, 19vw, 300px);
+  height: clamp(180px, 19vw, 300px);
+  background: #fff;
+  padding: 8px;
+  border-radius: 8px;
+  image-rendering: pixelated;
+}
+.tv-phone-copy { flex: 1; min-width: 260px; color: #d6cbcb; font-size: clamp(14px, 1.2vw, 22px); line-height: 1.5; }
+.tv-phone-copy strong { display: block; color: #ff5f68; letter-spacing: .16em; margin-bottom: .5em; font-size: clamp(15px, 1.25vw, 23px); }
+.tv-phone-url { margin: .6em 0; color: #fff; font-weight: 900; font-size: clamp(17px, 1.6vw, 30px); word-break: break-all; }
+.tv-phone-pin { color: #fff; font-weight: 900; letter-spacing: .1em; }
+.tv-phone-pin b { color: #ffd3d5; font-size: 1.35em; letter-spacing: .22em; margin-left: .3em; }
+.tv-phone-copy small { display: block; margin-top: .8em; color: #9b8e8e; font-size: .74em; }
+
+/* Six-digit entry for pairing this TV with a timer running somewhere else. */
+.tv-row-pin { flex-wrap: wrap; }
+.tv-pin { display: flex; gap: clamp(6px, .7vw, 12px); }
+.tv-digit {
+  display: grid;
+  place-items: center;
+  width: clamp(38px, 3.4vw, 62px);
+  height: clamp(50px, 4.6vw, 82px);
+  border: 2px solid #5c4b4f;
+  border-radius: 6px;
+  background: #121317;
+  color: #fff;
+  font-size: clamp(22px, 2.2vw, 40px);
+  font-weight: 900;
+}
+.tv-digit.focused { border-color: #ff6069; background: #3a1418; box-shadow: 0 0 0 3px #ff606955; }
+
+.tv-about { color: #cdc1c2; font-size: clamp(15px, 1.3vw, 24px); line-height: 1.65; }
+.tv-about strong { color: #fff; }
+.tv-about-state { color: #ff8188; font-weight: 800; }
+.tv-about-keys { color: #9b8e8e; font-size: .85em; letter-spacing: .06em; }
+
+.tv-hint {
+  padding: clamp(10px, 1.1vw, 18px) clamp(18px, 2vw, 34px);
+  border-top: 1px solid #33343b;
+  background: #101116;
+  color: #9c9092;
+  font-size: clamp(12px, 1.05vw, 19px);
+  font-weight: 800;
+  letter-spacing: .13em;
+  white-space: pre-wrap;
+}
+
+.tv-toast {
+  position: fixed;
+  z-index: 30;
+  left: 50%;
+  top: calc(4vh + var(--tv-safe, 0px));
+  transform: translateX(-50%);
+  max-width: 80vw;
+  padding: .75em 1.4em;
+  border: 1px solid #ff6069;
+  border-radius: 6px;
+  background: #2b1115f5;
+  color: #fff;
+  font-size: clamp(15px, 1.3vw, 24px);
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-align: center;
+}
+
+/* An IPv4 address is four groups of three digits; show the seams. */
+.tv-digit.gap { margin-left: clamp(10px, 1.1vw, 20px); position: relative; }
+.tv-digit.gap::before {
+  content: "·";
+  position: absolute;
+  left: calc(-1 * clamp(9px, 0.95vw, 17px));
+  color: #8d7f80;
+}

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Gracie Barra Timer</string>
+    <string name="exit_hint">Press BACK again to close the timer</string>
+    <string name="error_port">The timer could not open a network port (8765–8774).\n\nAnother copy of the app may already be running. Close it from the TV\'s app list and start this one again.</string>
+    <string name="error_webview">This TV has no usable system WebView, so the timer display cannot be drawn.\n\nUpdate Android System WebView from the Play Store, then start the timer again.</string>
+</resources>
