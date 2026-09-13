@@ -16,7 +16,8 @@
     open: [0, 0]
   };
   var PRESET_NAMES = ['regular', 'competition', 'eight', 'ten', 'positional', 'shark', 'open', 'custom'];
-  var BUZZERS = ['classic', 'airhorn', 'bell', 'digital'];
+  /* The first four are synthesised; the rest are recordings in buzzers/. */
+  var BUZZERS = ['classic', 'airhorn', 'bell', 'digital', 'opening', 'boxing', 'boxing3'];
   var MAX_EVENTS = 16;
   var WARNING_AT = 10;
   var NUDGE = 10;

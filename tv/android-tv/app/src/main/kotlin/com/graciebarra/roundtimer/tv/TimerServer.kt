@@ -42,11 +42,14 @@ class TimerServer(
             "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; " +
                 "connect-src 'self'; base-uri 'none'; form-action 'self'"
 
+        private val ASSET_NAME = Regex("^[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)?\\.[a-z0-9]+$")
+
         private val TYPES = mapOf(
             "html" to "text/html; charset=utf-8",
             "css" to "text/css; charset=utf-8",
             "js" to "application/javascript; charset=utf-8",
             "png" to "image/png",
+            "mp3" to "audio/mpeg",
             "svg" to "image/svg+xml",
             "json" to "application/json; charset=utf-8"
         )
@@ -166,8 +169,10 @@ class TimerServer(
                 "/", "/display", "/control" -> return sendAsset(output, "web/index.html", "html", setCookie)
                 "/api/state" -> return send(output, 200, "OK", TYPES["json"]!!, stateJson(trusted).toByteArray(), setCookie)
             }
+            /* One directory deep, letters digits and dashes only: enough for
+               buzzers/boxing-bell-3.mp3 and nothing that can climb out of web/. */
             val name = target.trimStart('/')
-            if (name.isNotEmpty() && !name.contains("..") && !name.contains('/')) {
+            if (ASSET_NAME.matches(name)) {
                 val extension = name.substringAfterLast('.', "")
                 val type = TYPES[extension]
                 if (type != null && asset("web/$name") != null) return sendAsset(output, "web/$name", extension, setCookie)

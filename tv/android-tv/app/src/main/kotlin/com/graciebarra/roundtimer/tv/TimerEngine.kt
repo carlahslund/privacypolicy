@@ -51,7 +51,8 @@ class TimerEngine(
             "open" to (0 to 0)
         )
         val PRESET_NAMES = listOf("regular", "competition", "eight", "ten", "positional", "shark", "open", "custom")
-        val BUZZERS = listOf("classic", "airhorn", "bell", "digital")
+        /* The first four are synthesised; the rest are recordings in assets. */
+        val BUZZERS = listOf("classic", "airhorn", "bell", "digital", "opening", "boxing", "boxing3")
         val ACTIONS = listOf("toggle", "reset", "next", "previous", "plus", "minus", "buzzer")
 
         private const val MAX_EVENTS = 16

@@ -22,7 +22,7 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..', '..', 'timer');
 const PORT = 8847;
-const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript', '.png': 'image/png' };
+const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript', '.png': 'image/png', '.mp3': 'audio/mpeg' };
 
 let failures = 0;
 let checks = 0;
@@ -41,17 +41,19 @@ function check(label, actual, expected) {
 function gatedAudio() {
   window.__gesture = false;
   document.addEventListener('click', () => { window.__gesture = true; }, true);
-  const node = () => ({
-    connect() {}, start() {}, stop() {}, type: '',
-    frequency: { value: 0, setValueAtTime() {} },
-    gain: { value: 0, setValueAtTime() {}, exponentialRampToValueAtTime() {} }
-  });
+  /* Wraps a real context rather than replacing it, so decoding and playback are
+     genuine and only the gesture gate is simulated. */
+  const Native = window.AudioContext;
   class GatedContext {
-    constructor() { this._state = 'suspended'; this.destination = {}; this.currentTime = 0; }
+    constructor() { this._real = new Native(); this._state = 'suspended'; }
     get state() { return this._state; }
+    get destination() { return this._real.destination; }
+    get currentTime() { return this._real.currentTime; }
     resume() { if (window.__gesture) this._state = 'running'; return Promise.resolve(); }
-    createOscillator() { return node(); }
-    createGain() { return node(); }
+    decodeAudioData(bytes, onDone, onFail) { return this._real.decodeAudioData(bytes, onDone, onFail); }
+    createBufferSource() { return this._real.createBufferSource(); }
+    createOscillator() { return this._real.createOscillator(); }
+    createGain() { return this._real.createGain(); }
   }
   window.AudioContext = GatedContext;
   window.webkitAudioContext = GatedContext;
@@ -142,6 +144,41 @@ async function main() {
       window.AudioContext.prototype.createOscillator = real;
       return voices > 0;
     }), true);
+
+    /* --- the recorded bells --------------------------------------------- */
+    const recorded = await page.evaluate(async () => {
+      const results = {};
+      for (const style of ['opening', 'boxing', 'boxing3']) {
+        const buffer = await window.GBApp.loadBuzzer(style);
+        results[style] = buffer ? Math.round(buffer.duration * 100) / 100 : null;
+      }
+      return results;
+    });
+    check('the opening bell decodes', recorded.opening > 0.5 && recorded.opening < 2, true);
+    check('the single boxing bell decodes', recorded.boxing > 0.5 && recorded.boxing < 2, true);
+    check('the triple boxing bell decodes', recorded.boxing3 > 0.8 && recorded.boxing3 < 2.5, true);
+
+    check('a recorded bell is played, not synthesised', await page.evaluate(() => {
+      let buffers = 0;
+      let oscillators = 0;
+      const realBuffer = AudioContext.prototype.createBufferSource;
+      const realOsc = AudioContext.prototype.createOscillator;
+      AudioContext.prototype.createBufferSource = function () { buffers += 1; return realBuffer.call(this); };
+      AudioContext.prototype.createOscillator = function () { oscillators += 1; return realOsc.call(this); };
+      window.GBApp.sound('end_round', 'boxing3', 0.8);
+      AudioContext.prototype.createBufferSource = realBuffer;
+      AudioContext.prototype.createOscillator = realOsc;
+      return { buffers, oscillators };
+    }), { buffers: 1, oscillators: 0 });
+
+    check('the ten-second warning stays synthesised', await page.evaluate(() => {
+      let oscillators = 0;
+      const realOsc = AudioContext.prototype.createOscillator;
+      AudioContext.prototype.createOscillator = function () { oscillators += 1; return realOsc.call(this); };
+      window.GBApp.sound('warning', 'boxing3', 0.8);
+      AudioContext.prototype.createOscillator = realOsc;
+      return oscillators;
+    }), 1);
 
     /* --- a TV that does send keys still works exactly as before ------------ */
     const remote = await context.newPage();

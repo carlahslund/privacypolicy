@@ -1,0 +1,11 @@
+Recorded buzzers
+================
+
+opening-bell.mp3     excerpt of "opening bell" (uploaded by the gym)
+boxing-bell.mp3      first signal from "boxing bell signals", freesound community
+boxing-bell-3.mp3    third signal (three rings) from the same recording
+
+Both source recordings were supplied by the gym. The clips here are exact frame
+level excerpts — no re-encoding — cut by tv/tools/make-buzzers.py. Check the
+licence terms of the originals before distributing the apps outside the gym;
+freesound community uploads are usually CC0 but that is worth confirming per file.

@@ -38,7 +38,7 @@ class MainActivity : Activity() {
 
     private lateinit var engine: TimerEngine
     private var server: TimerServer? = null
-    private val buzzer = Buzzer()
+    private val buzzer by lazy { Buzzer(assets) }
     private var ticker: ScheduledExecutorService? = null
     private var webView: WebView? = null
     private var lastBackAt = 0L

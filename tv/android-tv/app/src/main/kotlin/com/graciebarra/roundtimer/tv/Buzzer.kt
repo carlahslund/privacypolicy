@@ -1,8 +1,10 @@
 package com.graciebarra.roundtimer.tv
 
+import android.content.res.AssetManager
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import android.media.MediaPlayer
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -22,7 +24,7 @@ import kotlin.math.sin
  * same envelopes, same timings as the WebAudio versions in the shared app.js — and the
  * WebView is told to stay quiet.
  */
-class Buzzer {
+class Buzzer(private val assets: AssetManager? = null) {
 
     private class Partial(
         val frequency: Double,
@@ -38,13 +40,30 @@ class Buzzer {
         private const val TAG = "Buzzer"
         private const val RATE = 44100
         private const val FLOOR = 0.001
+
+        /* The bells the gym recorded, against the file each one plays. Everything
+           else on the list is synthesised below. */
+        private val RECORDINGS = mapOf(
+            "opening" to "web/buzzers/opening-bell.mp3",
+            "boxing" to "web/buzzers/boxing-bell.mp3",
+            "boxing3" to "web/buzzers/boxing-bell-3.mp3"
+        )
     }
 
     private val handler = Handler(Looper.getMainLooper())
     private var track: AudioTrack? = null
+    private var player: MediaPlayer? = null
 
     fun play(kind: String, style: String, volume: Double) {
-        val partials = voice(kind, style, volume.coerceIn(0.0, 1.0)) ?: return
+        val level = volume.coerceIn(0.0, 1.0)
+        val recording = RECORDINGS[style]
+        if (recording != null && (kind == "end_round" || kind == "manual")) {
+            /* MediaPlayer wants a thread with a Looper, and the buzzer is raised
+               from whichever thread ran the clock out. */
+            handler.post { playRecording(recording, level) }
+            return
+        }
+        val partials = voice(kind, style, level) ?: return
         try {
             playPcm(render(partials))
         } catch (error: Exception) {
@@ -54,6 +73,52 @@ class Buzzer {
 
     fun release() {
         stopTrack()
+        handler.post { stopPlayer() }
+    }
+
+    private fun playRecording(path: String, volume: Double) {
+        val manager = assets
+        if (manager == null) {
+            Log.w(TAG, "no assets: falling back to the synthesised horn")
+            play("end_round", "classic", volume)
+            return
+        }
+        stopPlayer()
+        try {
+            val next = MediaPlayer()
+            manager.openFd(path).use { descriptor ->
+                next.setDataSource(descriptor.fileDescriptor, descriptor.startOffset, descriptor.length)
+            }
+            next.setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
+            )
+            next.setVolume(volume.toFloat(), volume.toFloat())
+            next.setOnCompletionListener { finished ->
+                if (player === finished) player = null
+                finished.release()
+            }
+            next.prepare()
+            next.start()
+            player = next
+        } catch (error: Exception) {
+            /* A missing or unplayable file must not leave the round silent. */
+            Log.w(TAG, "could not play $path", error)
+            play("end_round", "classic", volume)
+        }
+    }
+
+    private fun stopPlayer() {
+        val current = player ?: return
+        player = null
+        try {
+            current.stop()
+        } catch (_: IllegalStateException) {
+        } finally {
+            current.release()
+        }
     }
 
     private fun voice(kind: String, style: String, volume: Double): List<Partial>? = when (kind) {

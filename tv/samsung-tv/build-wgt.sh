@@ -22,6 +22,7 @@ mkdir -p "$STAGE"
 # The display, the engine, the buzzer voices and the ten-foot menu are shared with the
 # Android app and with the Windows build; only the shell below is Samsung's.
 cp "$SHARED"/*.js "$SHARED"/*.css "$SHARED"/logo.png "$STAGE/"
+cp -r "$SHARED/buzzers" "$STAGE/"
 cp "$HERE/config.xml" "$HERE/icon.png" "$STAGE/"
 
 # Tizen needs two extra tags in the page: the TV's own web APIs, and the shell that
